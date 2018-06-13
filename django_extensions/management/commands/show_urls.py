@@ -190,7 +190,7 @@ class Command(BaseCommand):
 
             for row in views:
                 table_views.append(
-                    ' | '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
+                    '| '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))
                 )
 
             # Replace original views so we can return the same object
