@@ -173,11 +173,17 @@ class Command(BaseCommand):
         elif format_style == 'table':
             # Reformat all data and show in a table format
 
-            views = [row.split(',', 3) for row in views]
+            has_decorators = any([not view.endswith(",") for view in views])
+
+            if not has_decorators:
+                views = [row.split(',', 3)[:-1] for row in views] # drop last column since no one has a decorator
+                header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'), )
+            else:
+                views = [row.split(',', 3) for row in views]
+                header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'), style.MODULE_NAME('Decorator'))
+
             widths = [len(max(columns, key=len)) for columns in zip(*views)]
             table_views = []
-
-            header = (style.MODULE_NAME('URL'), style.MODULE_NAME('Module'), style.MODULE_NAME('Name'), style.MODULE_NAME('Decorator'))
 
             widths = [max(width, len(head)) for width, head in zip(widths, header)]
 
