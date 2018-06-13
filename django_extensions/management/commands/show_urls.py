@@ -72,6 +72,9 @@ class Command(BaseCommand):
         parser.add_argument(
             "--urlconf", "-c", dest="urlconf", default="ROOT_URLCONF",
             help="Set the settings URL conf variable to use")
+        parser.add_argument(
+            "--sphinx", "-s", dest="sphinx_style", action="store_true",
+            help="whether to enclose views in sphinx references in tabular style")
 
     @signalcommand
     def handle(self, *args, **options):
@@ -174,6 +177,7 @@ class Command(BaseCommand):
             # Reformat all data and show in a table format
 
             has_decorators = any([not view.endswith(",") for view in views])
+            sphinx = options.get("sphinx_style")
 
             if not has_decorators:
                 views = [row.split(',', 3)[:-1] for row in views] # drop last column since no one has a decorator
@@ -187,13 +191,20 @@ class Command(BaseCommand):
 
             widths = [max(width, len(head)) for width, head in zip(widths, header)]
 
-            table_views.append('+='+'=+='.join('=' * (width) for width in widths)+'=+') #top of the table
+            if sphinx:
+                widths = [size+len(":py:obj:``") for size in widths] # leave more space for sphinx syntax
+
+            table_views.append('+-'+'-+-'.join('-' * (width) for width in widths)+'-+') #top of the table
             table_views.append(
                '| '+' | '.join('{0:<{1}}'.format(title, width) for width, title in zip(widths, header)) + ' |'   #added left and rightmost borders
             )
             table_views.append('+='+'=+='.join('=' * (width) for width in widths)+'=+')
 
             for row in views:
+
+                if sphinx:
+                    row[1] = ":py:obj:`{}`".format(row[1])
+                
                 table_views.append(
                     '| '+' | '.join('{0:<{1}}'.format(cdata, width) for width, cdata in zip(widths, row))+ ' |' 
                 )
