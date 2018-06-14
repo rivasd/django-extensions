@@ -75,6 +75,9 @@ class Command(BaseCommand):
         parser.add_argument(
             "--sphinx", "-s", dest="sphinx_style", action="store_true",
             help="whether to enclose views in sphinx references in tabular style")
+        parser.add_argument(
+            "--exclude", "-x", dest="excluded", nargs="*",
+            help="space separated url namespaces to exclude")
 
     @signalcommand
     def handle(self, *args, **options):
@@ -153,6 +156,12 @@ class Command(BaseCommand):
                 url = simplify_regex(regex)
                 decorator = ', '.join(decorators)
 
+                # filter out urls with non-desired namespaces
+                excluded = options.get("excluded")
+                if excluded:
+                    if url.split("/")[1] in excluded:
+                        continue
+
                 if format_style == 'json':
                     views.append({"url": url, "module": module, "name": url_name, "decorators": decorator})
                 else:
@@ -162,6 +171,7 @@ class Command(BaseCommand):
                         url=style.URL(url),
                         decorator=decorator,
                     ).strip())
+
 
         if not options.get('unsorted', False) and format_style != 'json':
             views = sorted(views)
@@ -220,7 +230,7 @@ class Command(BaseCommand):
 
         return "\n".join([v for v in views]) + "\n"
 
-    def extract_views_from_urlpatterns(self, urlpatterns, base='', namespace=None):
+    def extract_views_from_urlpatterns(self, urlpatterns, base='', namespace=None ):
         """
         Return a list of views from a list of urlpatterns.
 
